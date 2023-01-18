@@ -18,9 +18,26 @@ const start = async () => {
   // Fetch current balance.
   const balance = await Lightning.walletBalance();
 
-  const invoice = await Invoices.subscribeSingleInvoice({
-    r_hash_str: "a",
-  });
+  console.log("balance", balance);
+
+  // const invoice = await Lightning.
+  const invoice = await Lightning.addInvoice(
+    { value: 10000, memo: "test bitch" },
+    async function (err, response) {
+      console.log(response);
+      if (err) reject(err);
+      else {
+        const { timestamp, expiry } = await Lightning.decodePayReq({
+          pay_req: response.payment_request,
+        });
+        // resolve({
+        //   r_hash: response.r_hash,
+        //   payment_request: response.payment_request,
+        //   expiration: timestamp + expiry,
+        // });
+      }
+    }
+  );
 
   console.log(invoice);
 };
