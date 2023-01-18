@@ -14,32 +14,40 @@ const start = async () => {
 
   console.log(grpc.state);
 
-  const { Lightning, Autopilot, Invoices } = grpc.services;
+  const { Lightning, Autopilot, Invoices, Channels, Router } = grpc.services;
   // Fetch current balance.
   const balance = await Lightning.walletBalance();
 
   console.log("balance", balance);
 
-  // const invoice = await Lightning.
-  const invoice = await Lightning.addInvoice(
-    { value: 10000, memo: "test bitch" },
-    async function (err, response) {
-      console.log(response);
-      if (err) reject(err);
-      else {
-        const { timestamp, expiry } = await Lightning.decodePayReq({
-          pay_req: response.payment_request,
-        });
-        // resolve({
-        //   r_hash: response.r_hash,
-        //   payment_request: response.payment_request,
-        //   expiration: timestamp + expiry,
-        // });
-      }
-    }
-  );
+  const channels = await Lightning.channelBalance();
 
-  console.log(invoice);
+  console.log("channels", channels);
+
+  const invoicePaid = await Router.sendPaymentV2({
+    timeout_seconds: 10,
+    payment_request:
+      "lnbcrt220u1p3usac7pp5sfzn75dezcj9rm2ccz3vu8zmqzwq095jtlkej9gfsyfkvtdgj2fsdqqcqzpgxqyz5vqsp53w0jj45em97dm65u05rnxvvp2edxcnuhwx98en0ghs5uv5ksnjks9qyyssq59dqt0py4s0c4ssxhmsx0mxka3ektcq436fgns20j95ffyl6m5yrwd9wy5fl3eka6q53hclxw3qkvsnlvuq5vkrpprka8y5lya0czjsqjxx48v",
+  });
+
+  invoicePaid.on("data", function (response) {
+    // A response was received from the server.
+    console.log(response);
+  });
+
+  // const invoice = await Lightning.
+  // const invoice = await Lightning.addInvoice(
+  //   { value: 10000, memo: "test" },
+  //   async function (err, response) {
+  //     // console.log(response);
+  //     if (err) reject(err);
+  //     else {
+  //       const { timestamp, expiry } = await Lightning.decodePayReq({
+  //         pay_req: response.payment_request,
+  //       });
+  //     }
+  //   }
+  // );
 };
 
 start();
